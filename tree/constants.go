@@ -1,6 +1,6 @@
 package tree
 
-var (
+const (
 	verLine = "│"
 	horLine = "──"
 	vhLine  = verLine + horLine

@@ -7,10 +7,24 @@ import (
 	"path/filepath"
 )
 
-func (c *Config) Tree(path, indent, line, resp string, r Report) (string, Report, error) {
+func (c *Config) MakeResp(path string) (string, error) {
+	var r Report
+	resp, r, err := c.tree(path, "", "", "", &r)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf(
+		"%v\n%v directories, %v files",
+		resp,
+		r.DirCount-(r.FileCount),
+		r.FileCount,
+	), err
+}
+
+func (c *Config) tree(path, indent, line, resp string, r *Report) (string, Report, error) {
 	fi, err := os.Stat(path)
 	if err != nil {
-		return resp, r, fmt.Errorf("could not stat %s: %v", path, err)
+		return resp, *r, fmt.Errorf("could not stat %s: %v", path, err)
 	}
 
 	if c.RelativePath {
@@ -23,12 +37,12 @@ func (c *Config) Tree(path, indent, line, resp string, r Report) (string, Report
 
 	if !fi.IsDir() {
 		r.FileCount++
-		return resp, r, nil
+		return resp, *r, nil
 	}
 
 	fis, err := ioutil.ReadDir(path)
 	if err != nil {
-		return resp, r, fmt.Errorf("could not read dir %s: %v", path, err)
+		return resp, *r, fmt.Errorf("could not read dir %s: %v", path, err)
 	}
 
 	var names []string
@@ -51,10 +65,10 @@ func (c *Config) Tree(path, indent, line, resp string, r Report) (string, Report
 			line = indent + vhLine
 		}
 
-		if resp, _, err = c.Tree(filepath.Join(path, name), indent+add, line, resp, r); err != nil {
-			return resp, r, err
+		if resp, _, err = c.tree(filepath.Join(path, name), indent+add, line, resp, r); err != nil {
+			return resp, *r, err
 		}
 	}
 
-	return resp, r, nil
+	return resp, *r, nil
 }
