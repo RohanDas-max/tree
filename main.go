@@ -20,7 +20,7 @@ func main() {
 	c := tree.Config{RelativePath: *f, DirOnly: *d}
 	resp, err := c.MakeResp(arg)
 	if err != nil {
-		log.Printf("tree %s: %v\n", arg, err)
+		log.Printf("error occurred while: %v\n", err)
 	}
 
 	fmt.Println(resp)

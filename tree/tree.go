@@ -27,13 +27,7 @@ func (c *Config) tree(path, indent, line, resp string, r *Report) (string, Repor
 		return resp, *r, fmt.Errorf("could not stat %s: %v", path, err)
 	}
 
-	if c.RelativePath {
-		resp += line + path + "/" + fi.Name() + "\n"
-		r.DirCount++
-	} else {
-		resp += line + fi.Name() + "\n"
-		r.DirCount++
-	}
+	resp = c.buildResp(path, line, resp, fi)
 
 	if !fi.IsDir() {
 		r.FileCount++
@@ -52,6 +46,7 @@ func (c *Config) tree(path, indent, line, resp string, r *Report) (string, Repor
 			if c.DirOnly && !fi.IsDir() {
 				continue
 			}
+			r.DirCount++
 			names = append(names, fi.Name())
 		}
 	}
@@ -65,7 +60,7 @@ func (c *Config) tree(path, indent, line, resp string, r *Report) (string, Repor
 			line = indent + vhLine
 		}
 
-		if resp, _, err = c.tree(filepath.Join(path, name), indent+add, line, resp, r); err != nil {
+		if resp, *r, err = c.tree(filepath.Join(path, name), indent+add, line, resp, r); err != nil {
 			return resp, *r, err
 		}
 	}
