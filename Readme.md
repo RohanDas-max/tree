@@ -12,4 +12,4 @@
 ## How to test
    - Use `make test` command for running the test
       - Current coverage is  `89.3%` for tree function(core)
-      - Average `89.7%%`
+      - Average `89.7%`
