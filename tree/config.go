@@ -5,7 +5,8 @@ import "os"
 type Config struct {
 	RelativePath bool
 	DirOnly      bool
-	Levels       int
+	Depth        int
+	Permission   bool
 }
 
 type Report struct {
@@ -16,6 +17,8 @@ type Report struct {
 func (c *Config) buildResp(path, line, resp string, fi os.FileInfo) string {
 	if c.RelativePath {
 		resp += line + path + "\n"
+	} else if c.Permission {
+		resp += line + "[" + fi.Mode().String() + "]" + " " + fi.Name() + "\n"
 	} else {
 		resp += line + fi.Name() + "\n"
 	}

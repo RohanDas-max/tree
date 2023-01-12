@@ -2,14 +2,13 @@ package tree
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
 
-func (c *Config) MakeResp(path string) (string, error) {
+func (c *Config) TreeController(path string) (string, error) {
 	var r Report
-	resp, r, err := c.tree(path, "", "", "", &r)
+	resp, r, err := c.tree(path, "", "", "", &r, 0)
 	if err != nil {
 		return "", err
 	}
@@ -21,7 +20,11 @@ func (c *Config) MakeResp(path string) (string, error) {
 	), err
 }
 
-func (c *Config) tree(path, indent, line, resp string, r *Report) (string, Report, error) {
+func (c *Config) tree(
+	path, indent, line, resp string,
+	r *Report,
+	depthCount int,
+) (string, Report, error) {
 	fi, err := os.Stat(path)
 	if err != nil {
 		return resp, *r, fmt.Errorf("could not stat %s: %v", path, err)
@@ -34,7 +37,11 @@ func (c *Config) tree(path, indent, line, resp string, r *Report) (string, Repor
 		return resp, *r, nil
 	}
 
-	fis, err := ioutil.ReadDir(path)
+	if c.Depth != 0 && c.Depth == depthCount {
+		return resp, *r, nil
+	}
+
+	fis, err := os.ReadDir(path)
 	if err != nil {
 		return resp, *r, fmt.Errorf("could not read dir %s: %v", path, err)
 	}
@@ -60,7 +67,7 @@ func (c *Config) tree(path, indent, line, resp string, r *Report) (string, Repor
 			line = indent + vhLine
 		}
 
-		if resp, *r, err = c.tree(filepath.Join(path, name), indent+add, line, resp, r); err != nil {
+		if resp, *r, err = c.tree(filepath.Join(path, name), indent+add, line, resp, r, depthCount+1); err != nil {
 			return resp, *r, err
 		}
 	}
